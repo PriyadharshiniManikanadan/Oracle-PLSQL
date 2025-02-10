@@ -288,5 +288,95 @@ end;
 --------------------------------------------------------------------------------
 -- Rule 6 : Cannot place the LABEL into Exception Handler
 
+set serveroutput on;
+
+declare
+
+v_first_name employees.first_name%type;
+v_emp_id employees.employee_id%type := 1005;
+
+begin
+
+ goto emp_data;
+ 
+    select first_name into v_first_name 
+    from employees 
+    where employee_id = v_emp_id;    
+        
+    dbms_output.put_line(v_emp_id ||' '||v_first_name);
+        
+    exception
+        when no_data_found then
+        <<emp_data>>                -- ERROR : illegal GOTO statement; this GOTO cannot branch to label 'EMP_DATA'
+        dbms_output.put_line(v_emp_id ||' '||'is not found in the table');
+    
+end;
+/
+--------------------------------------------------------------------------------
+-- Rule 7 : Cannot transfer control from an Exception Handler into the current block
+
+set serveroutput on;
+
+declare
+
+v_first_name employees.first_name%type;
+v_emp_id employees.employee_id%type := 1005;
+
+begin   -- Main/Current Block
+ 
+    select first_name into v_first_name 
+    from employees 
+    where employee_id = v_emp_id;    
+        
+    dbms_output.put_line(v_emp_id ||' '||v_first_name);
+    
+    <<emp_data>>
+    if v_emp_id = 1005 then
+    dbms_output.put_line(v_emp_id ||' '||v_first_name);
+    end if;
+        
+    exception
+        when no_data_found then
+        goto emp_data;           -- ERROR : illegal GOTO statement; this GOTO cannot branch to label 'EMP_DATA'     
+        dbms_output.put_line(v_emp_id ||' '||'is not found in the table');
+    
+end;
+/
+--------------------------------------------------------------------------------
+-- It gives the output because LABEL is inside the Outer block not in the current block
+
+declare
+
+v_first_name employees.first_name%type;
+v_emp_id employees.employee_id%type := 1005;
+
+begin   -- Outer block Block
+
+   begin  -- sub block/ current block
+   
+        select first_name into v_first_name 
+        from employees 
+        where employee_id = v_emp_id;    
+            
+         dbms_output.put_line(v_emp_id ||' '||v_first_name);
+                
+        if v_emp_id = 1005 then
+         dbms_output.put_line(v_emp_id ||' '||v_first_name);
+        end if;
+            
+        exception
+            when no_data_found then
+            goto emp_data;             
+            dbms_output.put_line(v_emp_id ||' '||'is not found in the table');
+            
+    end;
+
+<<emp_data>>     -- It gives the output because LABEL is inside the Outer block not in the current block
+dbms_output.put_line('Employee_ID' ||' '||v_emp_id ||' '||'is not found in the table');
+
+end;
+/
+
+
 
 
