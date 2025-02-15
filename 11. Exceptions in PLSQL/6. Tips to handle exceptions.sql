@@ -14,6 +14,7 @@ BEST PRACTICE
 -- 1. Do not use 'NUll' statement in the exception block
 -- 2. Do not use 'dbms_output.put_line()' statement in the exception block, 
       --Because it is just a temporary memory, with this we cant debug anything in the future
+
 set serveroutput on;
 
 declare 
